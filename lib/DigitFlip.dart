@@ -45,7 +45,7 @@ class _DigitFlipState extends State<DigitFlip> {
       itemBuilder: (_, value) => Container(
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 59, 59, 57),
+          color: const Color.fromARGB(255, 85, 188, 219),
           borderRadius: BorderRadius.circular(4),
         ),
         width: 40,

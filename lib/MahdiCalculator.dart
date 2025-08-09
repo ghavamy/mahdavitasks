@@ -43,7 +43,7 @@ class MahdiCalculator extends StatelessWidget{
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/BackGround.jpg'),
+                image: AssetImage('assets/images/BackGround.jpeg'),
                 fit: BoxFit.cover,
                 // Optional: add a soft dim for readability
                 colorFilter: ColorFilter.mode(

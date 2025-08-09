@@ -30,6 +30,6 @@ flutter:
         
   assets:
     - assets/images/mahdi.jpg
-    - assets/images/BackGround.jpg
+    - assets/images/BackGround.jpeg
     - assets/images/smooth_green_gradient.png
 

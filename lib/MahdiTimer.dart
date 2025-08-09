@@ -2,6 +2,7 @@ import 'dart:async';
 import 'MahdiCalculator.dart';
 import 'DigitFlip.dart';
 import 'package:flutter/material.dart';
+import 'DualButtonWidget.dart';
 
 class MahdiTimer extends StatefulWidget {
   const MahdiTimer({super.key});
@@ -87,28 +88,61 @@ class _MahdiTimerState extends State<MahdiTimer> {
         mainAxisSize: MainAxisSize.min,
         children: [
           buildTimeDisplay(),
+          SizedBox(height: 32),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child:Column(
-            children: [
-              Image.asset(
-                'assets/images/mahdi.jpg',
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 20),
-              TextField(
-                  decoration: InputDecoration(
-                    hintText: '...بسم الله',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    filled: true,
-                    fillColor: Colors.white,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Label with background, centered
+                Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 191, 211, 77),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      "برای امام زمان (عج)",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  textAlign: TextAlign.right, // for RTL
-                  style: TextStyle(fontSize: 16),
-                ), 
-              SizedBox(height: 10), 
-              buildButtonsUnderTextField(),
+                ),
+
+                // Fully rounded TextField
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(255, 255, 255, 0.85),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade400),
+                  ),
+                  child: TextField(
+                    textAlign: TextAlign.right,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      hintText: '...بسم الله',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                SizedBox(height: 10),
+                DualButtonWidget(),
               ],
             ),
           ),
@@ -121,12 +155,12 @@ class _MahdiTimerState extends State<MahdiTimer> {
   Widget buildTimeDisplay(){
     return Stack(
       children: [
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/smooth_green_gradient.png',
-            fit: BoxFit.cover,
-          ), 
-        ),
+        // Positioned.fill(
+        //   child: Image.asset(
+        //     'assets/images/smooth_green_gradient.png',
+        //     fit: BoxFit.cover,
+        //   ), 
+        // ),
         Center(
           child: Container(
             alignment: Alignment.center,
@@ -153,12 +187,12 @@ class _MahdiTimerState extends State<MahdiTimer> {
                     ],
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 32),
                 Text(
                   'ای بهار آرزوها، ای امامِ دلنشین\nبیا که دل شکسته شود ز فراق غمین',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 32,
                     fontFamily: 'IranNastaliq',
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
@@ -204,40 +238,5 @@ class _MahdiTimerState extends State<MahdiTimer> {
           ),
         ],
       );
-  }
-
-  // Build the buttons under the text field
-  Widget buildButtonsUnderTextField(){
-    return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // TODO: First button action
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: Text(
-                    'دکمه اول',
-                    style: TextStyle(fontFamily: 'Vazir', fontSize: 16),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // TODO: Second button action
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: Text(
-                    'دکمه دوم',
-                    style: TextStyle(fontFamily: 'Vazir', fontSize: 16),
-                  ),
-                ),
-              ],
-            );
   }
 }
