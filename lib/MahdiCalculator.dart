@@ -59,12 +59,7 @@ class MahdiCalculator extends StatelessWidget{
               title: Text('زمان‌شمار مهدوی'),
               backgroundColor: Colors.indigo,
             ),
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: MahdiTimer(),
-              ),
-            ),
+            body:MahdiTimer(),
           ),
         ],
       ),

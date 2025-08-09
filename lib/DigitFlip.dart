@@ -45,7 +45,7 @@ class _DigitFlipState extends State<DigitFlip> {
       itemBuilder: (_, value) => Container(
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.indigo,
+          color: const Color.fromARGB(255, 59, 59, 57),
           borderRadius: BorderRadius.circular(4),
         ),
         width: 40,
@@ -53,7 +53,7 @@ class _DigitFlipState extends State<DigitFlip> {
         child: Text(
           value ?? '',
           style: TextStyle(
-            fontSize: 28,
+            fontSize: 24,
             color: Colors.white,
             fontFamily: 'Vazir',
           ),
