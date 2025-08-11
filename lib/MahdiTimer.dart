@@ -124,24 +124,23 @@ class _MahdiTimerState extends State<MahdiTimer> {
                 ),
 
                 // Fully rounded TextField
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(255, 255, 255, 0.85),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade400),
-                  ),
-                  child: TextField(
-                    textAlign: TextAlign.right,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      hintText: '...بسم الله',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                SizedBox(height: 10),
+                // Container(
+                //   decoration: BoxDecoration(
+                //     color: Color.fromRGBO(255, 255, 255, 0.85),
+                //     borderRadius: BorderRadius.circular(12),
+                //     border: Border.all(color: Colors.grey.shade400),
+                //   ),
+                //   child: TextField(
+                //     textAlign: TextAlign.right,
+                //     maxLines: 5,
+                //     decoration: InputDecoration(
+                //       hintText: '...بسم الله',
+                //       border: InputBorder.none,
+                //       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                //     ),
+                //     style: TextStyle(fontSize: 16),
+                //   ),
+                // ),
                 DualButtonWidget(),
               ],
             ),
