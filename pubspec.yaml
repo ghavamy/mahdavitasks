@@ -13,6 +13,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  shamsi_date: ^1.0.0
+  table_calendar: ^3.2.0
+  intl: ^0.20.2
+  provider: ^6.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -32,4 +37,5 @@ flutter:
     - assets/images/mahdi.jpg
     - assets/images/BackGround.jpeg
     - assets/images/smooth_green_gradient.png
+    - assets/images/IslamicButton.png
 

@@ -55,10 +55,6 @@ class MahdiCalculator extends StatelessWidget{
           ),
           Scaffold(
             backgroundColor: Colors.transparent, // <-- Crucial
-            appBar: AppBar(
-              title: Text('زمان‌شمار مهدوی'),
-              backgroundColor: Colors.indigo,
-            ),
             body:MahdiTimer(),
           ),
         ],

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import '../DatesWindow/note_store.dart';
+import 'package:provider/provider.dart';
 import 'package:mahdavitasks/DatesWindow/mainDateWindow.dart';
 
 class DualButtonWidget extends StatefulWidget {
+  const DualButtonWidget({super.key});
+
   @override
   _DualButtonWidgetState createState() => _DualButtonWidgetState();
 }
@@ -105,6 +109,10 @@ class _DualButtonWidgetState extends State<DualButtonWidget> {
             : ElevatedButton(
                 onPressed: () {
                   if (controller.text.trim().isNotEmpty) {
+                    context.read<NotesStore>().add(NoteEntry(
+                      date: DateTime.now(),
+                      text: controller.text.trim(),
+                    ));
                     setState(() {
                       submittedText = controller.text.trim();
                       isSubmitted = true;

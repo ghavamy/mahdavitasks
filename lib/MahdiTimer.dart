@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
-import 'DigitFlip.dart';
+import 'Widgets/DigitFlip.dart';
 import 'package:flutter/material.dart';
-import 'DualButtonWidget.dart';
+import 'Widgets/DualButtonWidget.dart';
 
 class MahdiTimer extends StatefulWidget {
   const MahdiTimer({super.key});
@@ -12,27 +13,33 @@ class MahdiTimer extends StatefulWidget {
 }
 
 class _MahdiTimerState extends State<MahdiTimer> {
-  late final Stream<Map<String, int>> breakdownStream;
-
   late final StreamController<String> _daysController;
   late final StreamController<String> _monthsController;
   late final StreamController<String> _yearsController;
   late final StreamController<String> _hoursController;
   late final StreamController<String> _minutesController;
   late final StreamController<String> _secondsController;
+
   late final Stream<String> daysStream;
   late final Stream<String> monthsStream;
   late final Stream<String> yearsStream;
   late final Stream<String> hoursStream;
   late final Stream<String> minutesStream;
   late final Stream<String> secondsStream;
+
   Map<String, int> timeBreakdown = {};
+
+  // Palette accents (gentle, handcrafted vibe)
+  final Color _accentOlive = const Color(0xFFBFD34D);
+  final Color _paperWhite = const Color(0xFFFFFFFF);
+  final Color _paperTint = const Color(0xFFF7F9F2);
+  final Color _chipBg = const Color(0xFFEFF4E0); // light olive-tinted chip
+  final Color _divider = const Color(0xFFDEE3D3);
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize the breakdown stream
     _daysController = StreamController<String>.broadcast();
     _monthsController = StreamController<String>.broadcast();
     _yearsController = StreamController<String>.broadcast();
@@ -48,7 +55,7 @@ class _MahdiTimerState extends State<MahdiTimer> {
     secondsStream = _secondsController.stream;
 
     _updateTime();
-    Timer.periodic(Duration(seconds: 1), (Timer t) => _updateTime());
+    Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
   }
 
   void _updateTime() {
@@ -60,7 +67,7 @@ class _MahdiTimerState extends State<MahdiTimer> {
       _secondsController.add(timeBreakdown['seconds']?.toString().padLeft(2, '0') ?? '00');
       _daysController.add(timeBreakdown['days']?.toString().padLeft(2, '0') ?? '00');
       _monthsController.add(timeBreakdown['months']?.toString().padLeft(2, '0') ?? '00');
-      _yearsController.add(timeBreakdown['years']?.toString().padLeft(4, '0') ?? '00');
+      _yearsController.add(timeBreakdown['years']?.toString().padLeft(4, '0') ?? '0000');
     });
   }
 
@@ -72,170 +79,203 @@ class _MahdiTimerState extends State<MahdiTimer> {
     _hoursController.close();
     _minutesController.close();
     _secondsController.close();
-    
     super.dispose();
   }
 
-  String _toPersianDigits(String number) {
-    const digits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    return number.split('').map((d) => digits[int.parse(d)]).join();
+  // Safe Persian digit mapping (ignores non-digits gracefully)
+  String _toPersianDigits(String input) {
+    const fa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    final buffer = StringBuffer();
+    for (final ch in input.characters) {
+      if (ch.codeUnitAt(0) >= 48 && ch.codeUnitAt(0) <= 57) {
+        buffer.write(fa[int.parse(ch)]);
+      } else {
+        buffer.write(ch);
+      }
+    }
+    return buffer.toString();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-        child:Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          buildTimeDisplay(),
-          SizedBox(height: 32),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child:Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Label with background, centered
-                Center(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 191, 211, 77),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      "برای امام زمان (عج)",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-
-                // Fully rounded TextField
-                // Container(
-                //   decoration: BoxDecoration(
-                //     color: Color.fromRGBO(255, 255, 255, 0.85),
-                //     borderRadius: BorderRadius.circular(12),
-                //     border: Border.all(color: Colors.grey.shade400),
-                //   ),
-                //   child: TextField(
-                //     textAlign: TextAlign.right,
-                //     maxLines: 5,
-                //     decoration: InputDecoration(
-                //       hintText: '...بسم الله',
-                //       border: InputBorder.none,
-                //       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                //     ),
-                //     style: TextStyle(fontSize: 16),
-                //   ),
-                // ),
-                DualButtonWidget(),
-              ],
-            ),
+    return Container(
+      color: Colors.transparent,
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildTimeDisplay(),
+              const SizedBox(height: 28),
+              _buildDevotionalSection(),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   // Build the main display for the timer
-  Widget buildTimeDisplay(){
-    return Stack(
+  Widget buildTimeDisplay() {
+    return Center(
+      child: Container(
+        alignment: Alignment.center,
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          image: DecorationImage(
+            image: AssetImage('assets/images/IslamicButton.png'), 
+            fit: BoxFit.cover,
+            alignment: Alignment.center
+          ),
+          border: Border.all(color: Colors.black.withOpacity(0.03)),
+        ),
+        child: Column(
+          children: [
+            // Time rows (with a divider between date and time parts)
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildDigitStreamWithLabel(stream: yearsStream, label: "سال"),
+                  const SizedBox(width: 10),
+                  _buildDigitStreamWithLabel(stream: monthsStream, label: "ماه"),
+                  const SizedBox(width: 10),
+                  _buildDigitStreamWithLabel(stream: daysStream, label: "روز"),
+                  const SizedBox(width: 16),
+                  Container(width: 1, height: 52, color: _divider),
+                  const SizedBox(width: 16),
+                  _buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت"),
+                  const SizedBox(width: 10),
+                  _buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه"),
+                  const SizedBox(width: 10),
+                  _buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه"),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Poem nicely framed
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(192, 250, 250, 250),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black.withOpacity(0.04)),
+              ),
+              child: const Text(
+                'ای بهار آرزوها، ای امامِ دلنشین\nبیا که دل شکسته شود ز فراق غمین',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontFamily: 'IranNastaliq',
+                  color: Colors.black,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Label chip + flipping digits
+  Widget _buildDigitStreamWithLabel({
+    required Stream<String> stream,
+    required String label,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Positioned.fill(
-        //   child: Image.asset(
-        //     'assets/images/smooth_green_gradient.png',
-        //     fit: BoxFit.cover,
-        //   ), 
-        // ),
-        Center(
-          child: Container(
-            alignment: Alignment.center,
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: Column(
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                      buildDigitStreamWithLabel(stream: yearsStream, label: "سال"),
-                      SizedBox(width: 8),
-                      buildDigitStreamWithLabel(stream: monthsStream, label: "ماه"),
-                      SizedBox(width: 8),
-                      buildDigitStreamWithLabel(stream: daysStream, label: "روز"),
-                      SizedBox(width: 8),
-                      buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت"),
-                      SizedBox(width: 8),
-                      buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه"),
-                      SizedBox(width: 8),
-                      buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه"),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 32),
-                Text(
-                  'ای بهار آرزوها، ای امامِ دلنشین\nبیا که دل شکسته شود ز فراق غمین',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontFamily: 'IranNastaliq',
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    height: 1.5,
-                  ),
-                ),
-              ]
+        // Label chip
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: _chipBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: _divider),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              fontFamily: 'Vazir',
             ),
           ),
+        ),
+        const SizedBox(height: 6),
+        // Digits
+        StreamBuilder<String>(
+          stream: stream,
+          builder: (context, snapshot) {
+            final text = snapshot.data ?? "00";
+            final digits = text.split('');
+            final persianDigits = digits.map(_toPersianDigits).toList();
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final d in persianDigits) ...[
+                  DigitFlip(digit: d),
+                  const SizedBox(width: 2),
+                ],
+              ],
+            );
+          },
         ),
       ],
     );
   }
 
-  // Build the digit stream for the flipping digits
-  Widget buildDigitStreamWithLabel({
-    required Stream<String> stream,
-    required String label,
-    }) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildDevotionalSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-              fontFamily: 'Vazir',
+          // Centered devotional chip
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: _accentOlive,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text(
+                "برای امام زمان (عج)",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
-          SizedBox(height: 4),
-          StreamBuilder<String>(
-            stream: stream,
-            builder: (context, snapshot) {
-              final digits = (snapshot.data ?? "00").split('');
-              final persianDigits = digits.map((d) => _toPersianDigits(d)).toList();
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: persianDigits.map((d) => DigitFlip(digit: d)).toList(),
-              );
-            },
-          ),
+          const SizedBox(height: 16),
+          Buttons(),
         ],
-      );
+      ),
+    );
   }
 }
