@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:mahdavitasks/Widgets/poem_carousel.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
-import 'Widgets/DigitFlip.dart';
 import 'package:flutter/material.dart';
-import 'Widgets/DualButtonWidget.dart';
+import 'Widgets/circular_time_widget.dart';
 
 class MahdiTimer extends StatefulWidget {
   const MahdiTimer({super.key});
@@ -29,10 +29,6 @@ class _MahdiTimerState extends State<MahdiTimer> {
 
   Map<String, int> timeBreakdown = {};
 
-  // Palette accents (gentle, handcrafted vibe)
-  final Color _accentOlive = const Color(0xFFBFD34D);
-  final Color _paperWhite = const Color(0xFFFFFFFF);
-  final Color _paperTint = const Color(0xFFF7F9F2);
   final Color _chipBg = const Color(0xFFEFF4E0); // light olive-tinted chip
   final Color _divider = const Color(0xFFDEE3D3);
 
@@ -107,8 +103,9 @@ class _MahdiTimerState extends State<MahdiTimer> {
             mainAxisSize: MainAxisSize.min,
             children: [
               buildTimeDisplay(),
-              const SizedBox(height: 28),
-              _buildDevotionalSection(),
+              const PoemCarousel(),
+              const SizedBox(height: 14),
+              Buttons(),
             ],
           ),
         ),
@@ -119,83 +116,45 @@ class _MahdiTimerState extends State<MahdiTimer> {
   // Build the main display for the timer
   Widget buildTimeDisplay() {
     return Center(
-      child: Container(
-        alignment: Alignment.center,
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-          image: DecorationImage(
-            image: AssetImage('assets/images/IslamicButton.png'), 
-            fit: BoxFit.cover,
-            alignment: Alignment.center
-          ),
-          border: Border.all(color: Colors.black.withOpacity(0.03)),
-        ),
-        child: Column(
-          children: [
-            // Time rows (with a divider between date and time parts)
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildDigitStreamWithLabel(stream: yearsStream, label: "سال"),
-                  const SizedBox(width: 10),
-                  _buildDigitStreamWithLabel(stream: monthsStream, label: "ماه"),
-                  const SizedBox(width: 10),
-                  _buildDigitStreamWithLabel(stream: daysStream, label: "روز"),
-                  const SizedBox(width: 16),
-                  Container(width: 1, height: 52, color: _divider),
-                  const SizedBox(width: 16),
-                  _buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت"),
-                  const SizedBox(width: 10),
-                  _buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه"),
-                  const SizedBox(width: 10),
-                  _buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Poem nicely framed
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(192, 250, 250, 250),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.black.withOpacity(0.04)),
-              ),
-              child: const Text(
-                'ای بهار آرزوها، ای امامِ دلنشین\nبیا که دل شکسته شود ز فراق غمین',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontFamily: 'IranNastaliq',
-                  color: Colors.black,
-                  height: 1.6,
+        child: Container(
+          alignment: Alignment.center,
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
+          child: Column(
+            children: [
+              // Time rows
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildDigitStreamWithLabel(stream: yearsStream, label: "سال", progressValue: timeBreakdown['years']! / 60, circleBackgroundColor: Color(0xFFD3BD67)),
+                    const SizedBox(width: 10),
+                    _buildDigitStreamWithLabel(stream: monthsStream, label: "ماه", progressValue: timeBreakdown['months']! / 60, circleBackgroundColor: Color(0xFF7CAC99)),
+                    const SizedBox(width: 10),
+                    _buildDigitStreamWithLabel(stream: daysStream, label: "روز", progressValue: timeBreakdown['days']! / 60, circleBackgroundColor: Color(0xFFABD6D7)),
+                    const SizedBox(width: 10),
+                    _buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت", progressValue: timeBreakdown['hours']! / 60, circleBackgroundColor: Color(0xFF66571D)),
+                    const SizedBox(width: 10),
+                    _buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه", progressValue: timeBreakdown['minutes']! / 60, circleBackgroundColor: Color(0xFFFFFFFF)),
+                    const SizedBox(width: 10),
+                    _buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه", progressValue: timeBreakdown['seconds']! / 60, circleBackgroundColor: Color(0xFF2C2C2C)),
+                  ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 5),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  // Label chip + flipping digits
   Widget _buildDigitStreamWithLabel({
-    required Stream<String> stream,
-    required String label,
-  }) {
+      required Stream<String> stream,
+      required String label,
+      required double progressValue, // 0.0 to 1.0
+      required Color circleBackgroundColor, // new parameter
+    }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -218,64 +177,31 @@ class _MahdiTimerState extends State<MahdiTimer> {
           ),
         ),
         const SizedBox(height: 6),
-        // Digits
-        StreamBuilder<String>(
-          stream: stream,
-          builder: (context, snapshot) {
-            final text = snapshot.data ?? "00";
-            final digits = text.split('');
-            final persianDigits = digits.map(_toPersianDigits).toList();
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (final d in persianDigits) ...[
-                  DigitFlip(digit: d),
-                  const SizedBox(width: 2),
-                ],
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDevotionalSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Centered devotional chip
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: _accentOlive,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Text(
-                "برای امام زمان (عج)",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+        // Circular arc + digits
+        CircularTimeDisplay(
+          seconds: (progressValue * 60).toInt(),
+          size: 120,
+          backgroundColor: circleBackgroundColor, // your custom color
+          progressColor: Colors.black, // always black arc
+          centerContent: StreamBuilder<String>(
+            stream: stream,
+            builder: (context, snapshot) {
+              final text = snapshot.data ?? "00";
+              final persianText = _toPersianDigits(text);
+              return Text(
+                persianText,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  fontFamily: 'Vazir',
                 ),
                 textAlign: TextAlign.center,
-              ),
-            ),
+              );
+            },
           ),
-          const SizedBox(height: 16),
-          Buttons(),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
