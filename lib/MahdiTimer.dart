@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:mahdavitasks/Widgets/poem_carousel.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
 import 'package:flutter/material.dart';
-import 'Widgets/circular_time_widget.dart';
 
 class MahdiTimer extends StatefulWidget {
   const MahdiTimer({super.key});
@@ -29,8 +29,6 @@ class _MahdiTimerState extends State<MahdiTimer> {
 
   Map<String, int> timeBreakdown = {};
 
-  final Color _chipBg = const Color(0xFFEFF4E0); // light olive-tinted chip
-  final Color _divider = const Color(0xFFDEE3D3);
 
   @override
   void initState() {
@@ -128,17 +126,17 @@ class _MahdiTimerState extends State<MahdiTimer> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildDigitStreamWithLabel(stream: yearsStream, label: "سال", progressValue: timeBreakdown['years']! / 60, circleBackgroundColor: Color(0xFFD3BD67)),
-                    const SizedBox(width: 10),
-                    _buildDigitStreamWithLabel(stream: monthsStream, label: "ماه", progressValue: timeBreakdown['months']! / 60, circleBackgroundColor: Color(0xFF7CAC99)),
-                    const SizedBox(width: 10),
-                    _buildDigitStreamWithLabel(stream: daysStream, label: "روز", progressValue: timeBreakdown['days']! / 60, circleBackgroundColor: Color(0xFFABD6D7)),
-                    const SizedBox(width: 10),
-                    _buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت", progressValue: timeBreakdown['hours']! / 60, circleBackgroundColor: Color(0xFF66571D)),
-                    const SizedBox(width: 10),
-                    _buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه", progressValue: timeBreakdown['minutes']! / 60, circleBackgroundColor: Color(0xFFFFFFFF)),
-                    const SizedBox(width: 10),
-                    _buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه", progressValue: timeBreakdown['seconds']! / 60, circleBackgroundColor: Color(0xFF2C2C2C)),
+                    _buildDigitStreamWithLabel(stream: yearsStream, label: "سال", progressValue: timeBreakdown['years']! / 10000, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFFD3BD67)),
+                    const SizedBox(width: 20),
+                    _buildDigitStreamWithLabel(stream: monthsStream, label: "ماه", progressValue: timeBreakdown['months']! / 12, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFF7CAC99)),
+                    const SizedBox(width: 20),
+                    _buildDigitStreamWithLabel(stream: daysStream, label: "روز", progressValue: timeBreakdown['days']! / 30, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFFABD6D7)),
+                    const SizedBox(width: 20),
+                    _buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت", progressValue: timeBreakdown['hours']! / 24, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFF66571D)),
+                    const SizedBox(width: 20),
+                    _buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه", progressValue: timeBreakdown['minutes']! / 60, ringColor: Color(0xFFEFF4E0), fillColor: Color.fromARGB(255, 145, 112, 235)),
+                    const SizedBox(width: 20),
+                    _buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه", progressValue: timeBreakdown['seconds']! / 60, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFF2C2C2C)),
                   ],
                 ),
               ),
@@ -150,58 +148,79 @@ class _MahdiTimerState extends State<MahdiTimer> {
     }
 
   Widget _buildDigitStreamWithLabel({
-      required Stream<String> stream,
-      required String label,
-      required double progressValue, // 0.0 to 1.0
-      required Color circleBackgroundColor, // new parameter
-    }) {
+    required Stream<String> stream,
+    required String label,
+    required double progressValue, // 0.0 → 1.0
+    required Color ringColor,
+    required Color fillColor,
+  }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Label chip
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: _chipBg,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: _divider),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-              fontFamily: 'Vazir',
+        _labelChip(label),
+        const SizedBox(height: 12),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: CircularProgressIndicator(
+                value: progressValue.clamp(0.0, 1.0),
+                strokeWidth: 10,
+                backgroundColor: ringColor,
+                valueColor: AlwaysStoppedAnimation<Color>(fillColor),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        // Circular arc + digits
-        CircularTimeDisplay(
-          seconds: (progressValue * 60).toInt(),
-          size: 120,
-          backgroundColor: circleBackgroundColor, // your custom color
-          progressColor: Colors.black, // always black arc
-          centerContent: StreamBuilder<String>(
-            stream: stream,
-            builder: (context, snapshot) {
-              final text = snapshot.data ?? "00";
-              final persianText = _toPersianDigits(text);
-              return Text(
-                persianText,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  fontFamily: 'Vazir',
+            ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  color: Colors.white.withOpacity(0.08),
+                  alignment: Alignment.center,
+                  child: StreamBuilder<String>(
+                    stream: stream,
+                    builder: (context, snapshot) {
+                      final text = _toPersianDigits(snapshot.data ?? '00');
+                      return Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontFamily: 'Vazir',
+                        ),
+                      );
+                    },
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _labelChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade400),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+          fontFamily: 'Vazir', // or your preferred Persian‑friendly font
+        ),
+      ),
     );
   }
 }

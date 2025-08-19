@@ -12,7 +12,6 @@ dependencies:
     sdk: flutter
 
   shamsi_date: ^1.0.0
-  table_calendar: ^3.2.0
   intl: ^0.20.2
   provider: ^6.1.5
 
