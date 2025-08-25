@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:mahdavitasks/Widgets/animated_button.dart';
 import 'package:mahdavitasks/Widgets/poem_carousel.dart';
+import 'package:mahdavitasks/Widgets/statistics_widget.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
 import 'package:flutter/material.dart';
@@ -92,18 +94,34 @@ class _MahdiTimerState extends State<MahdiTimer> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.transparent,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Timer display at the top with proper spacing
               buildTimeDisplay(),
+              const SizedBox(height: 24), // Optimized spacing for visual hierarchy
+
               const PoemCarousel(),
-              const SizedBox(height: 14),
-              Buttons(),
+              const SizedBox(height: 24),
+
+              // Daily tasks section - now the main focus after timer
+              const Buttons(),
+              const SizedBox(height: 24),
+
+              // Statistics section - آمار اعمال
+              const StatisticsWidget(),
+                const SizedBox(height: 24), 
+
+                Align(
+                alignment: Alignment.centerLeft,
+                child: AnimatedCalendarButton(),
+                ),
             ],
           ),
         ),
@@ -111,41 +129,80 @@ class _MahdiTimerState extends State<MahdiTimer> {
     );
   }
 
-  // Build the main display for the timer
+  // Build the main display for the timer - always in one row
   Widget buildTimeDisplay() {
-    return Center(
-        child: Container(
-          alignment: Alignment.center,
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
-          child: Column(
-            children: [
-              // Time rows
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildDigitStreamWithLabel(stream: yearsStream, label: "سال", progressValue: timeBreakdown['years']! / 10000, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFFD3BD67)),
-                    const SizedBox(width: 20),
-                    _buildDigitStreamWithLabel(stream: monthsStream, label: "ماه", progressValue: timeBreakdown['months']! / 12, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFF7CAC99)),
-                    const SizedBox(width: 20),
-                    _buildDigitStreamWithLabel(stream: daysStream, label: "روز", progressValue: timeBreakdown['days']! / 30, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFFABD6D7)),
-                    const SizedBox(width: 20),
-                    _buildDigitStreamWithLabel(stream: hoursStream, label: "ساعت", progressValue: timeBreakdown['hours']! / 24, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFF66571D)),
-                    const SizedBox(width: 20),
-                    _buildDigitStreamWithLabel(stream: minutesStream, label: "دقیقه", progressValue: timeBreakdown['minutes']! / 60, ringColor: Color(0xFFEFF4E0), fillColor: Color.fromARGB(255, 145, 112, 235)),
-                    const SizedBox(width: 20),
-                    _buildDigitStreamWithLabel(stream: secondsStream, label: "ثانیه", progressValue: timeBreakdown['seconds']! / 60, ringColor: Color(0xFFEFF4E0), fillColor: Color(0xFF2C2C2C)),
-                  ],
+    return Container(
+      alignment: Alignment.center,
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
+      child: Column(
+        children: [
+          // Single row layout for all screen sizes as requested
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildDigitStreamWithLabel(
+                  stream: yearsStream, 
+                  label: "سال", 
+                  progressValue: timeBreakdown['years']! / 10000, 
+                  ringColor: Theme.of(context).colorScheme.primary.withOpacity(0.6), 
+                  fillColor: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                  size: 120,
                 ),
-              ),
-              const SizedBox(height: 5),
-            ],
+                const SizedBox(width: 8),
+                _buildDigitStreamWithLabel(
+                  stream: monthsStream, 
+                  label: "ماه", 
+                  progressValue: timeBreakdown['months']! / 12, 
+                  ringColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2), 
+                  fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.6),
+                  size: 120,
+                ),
+                const SizedBox(width: 8),
+                _buildDigitStreamWithLabel(
+                  stream: daysStream, 
+                  label: "روز", 
+                  progressValue: timeBreakdown['days']! / 31, 
+                  ringColor: Theme.of(context).colorScheme.tertiary.withOpacity(0.2), 
+                  fillColor: Theme.of(context).colorScheme.tertiary.withOpacity(0.6),
+                  size: 120,
+                ),
+                const SizedBox(width: 8),
+                _buildDigitStreamWithLabel(
+                  stream: hoursStream, 
+                  label: "ساعت", 
+                  progressValue: timeBreakdown['hours']! / 24, 
+                  ringColor: Theme.of(context).colorScheme.primary.withOpacity(0.2), 
+                  fillColor: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                  size: 120,
+                ),
+                const SizedBox(width: 8),
+                _buildDigitStreamWithLabel(
+                  stream: minutesStream, 
+                  label: "دقیقه", 
+                  progressValue: timeBreakdown['minutes']! / 60, 
+                  ringColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2), 
+                  fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.6),
+                  size: 120,
+                ),
+                const SizedBox(width: 8),
+                _buildDigitStreamWithLabel(
+                  stream: secondsStream, 
+                  label: "ثانیه", 
+                  progressValue: timeBreakdown['seconds']! / 60, 
+                  ringColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2), 
+                  fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  size: 120,
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    }
+        ],
+      ),
+    );
+  }
 
   Widget _buildDigitStreamWithLabel({
     required Stream<String> stream,
@@ -153,6 +210,7 @@ class _MahdiTimerState extends State<MahdiTimer> {
     required double progressValue, // 0.0 → 1.0
     required Color ringColor,
     required Color fillColor,
+    double size = 200, // Default size, can be overridden for responsive design
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -163,22 +221,29 @@ class _MahdiTimerState extends State<MahdiTimer> {
           alignment: Alignment.center,
           children: [
             SizedBox(
-              width: 200,
-              height: 200,
+              width: size,
+              height: size,
               child: CircularProgressIndicator(
                 value: progressValue.clamp(0.0, 1.0),
-                strokeWidth: 10,
+                strokeWidth: size * 0.05, // Proportional stroke width
                 backgroundColor: ringColor,
-                valueColor: AlwaysStoppedAnimation<Color>(fillColor),
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.cyanAccent.withOpacity(0.9)),
               ),
             ),
             ClipOval(
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                 child: Container(
-                  width: 200,
-                  height: 200,
-                  color: Colors.white.withOpacity(0.08),
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: fillColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
                   alignment: Alignment.center,
                   child: StreamBuilder<String>(
                     stream: stream,
@@ -186,11 +251,18 @@ class _MahdiTimerState extends State<MahdiTimer> {
                       final text = _toPersianDigits(snapshot.data ?? '00');
                       return Text(
                         text,
-                        style: const TextStyle(
-                          fontSize: 32,
+                        style: TextStyle(
+                          fontSize: size * 0.16, // Proportional font size
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.black87, // High contrast for light background
                           fontFamily: 'Vazir',
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -208,17 +280,24 @@ class _MahdiTimerState extends State<MahdiTimer> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade400),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-          fontFamily: 'Vazir', // or your preferred Persian‑friendly font
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87, // High contrast for light background
+          fontFamily: 'Vazir',
         ),
       ),
     );

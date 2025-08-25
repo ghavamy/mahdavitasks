@@ -1,216 +1,257 @@
 import 'package:flutter/material.dart';
 import 'package:mahdavitasks/DatesWindow/note_store.dart';
-import 'package:mahdavitasks/DatesWindow/mainDateWindow.dart';
-import 'package:mahdavitasks/Widgets/animated_button.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
+import 'package:shamsi_date/shamsi_date.dart';
 
-class Buttons extends StatelessWidget {
+class Buttons extends StatefulWidget {
   const Buttons({super.key});
 
   @override
+  State<Buttons> createState() => _ButtonsState();
+}
+
+class _ButtonsState extends State<Buttons> {
+  final TextEditingController _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool _isEditMode = true;
+  String _savedText = '';
+  String? _currentEntryId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load today's task after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTodayTask();
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadTodayTask() async {
+    if (!mounted) return;
+    
+    final store = context.read<NotesStore>();
+    await store.loadData();
+    
+    if (!mounted) return;
+    
+    final today = DateTime.now();
+    final shamsiDate = Jalali.fromDateTime(today);
+    final entries = store.entriesOn(shamsiDate.year, shamsiDate.month, shamsiDate.day);
+    
+    if (entries.isNotEmpty) {
+      // Load the most recent entry for today
+      final latestEntry = entries.last;
+      if (mounted) {
+        setState(() {
+          _savedText = latestEntry.text;
+          _currentEntryId = latestEntry.id;
+          _isEditMode = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveTask() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    final store = context.read<NotesStore>();
+    final today = DateTime.now();
+    
+    final entry = NoteEntry(
+      date: today,
+      text: text,
+      id: _isEditMode ? _currentEntryId : null,
+    );
+
+    if(_isEditMode  && _currentEntryId != null) {
+      await store.update(entry);
+    } else {
+      await store.add(entry);
+    }
+
+    setState(() {
+      _savedText = text;
+      _currentEntryId = entry.id;
+      _isEditMode = false;
+    });
+    
+    _textController.clear();
+    _focusNode.unfocus();
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'عمل روزانه ثبت شد',
+            textDirection: TextDirection.rtl,
+            style: TextStyle(fontFamily: 'Vazir'),
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _enterEditMode() {
+    setState(() {
+      _isEditMode = true;
+      _textController.text = _savedText;
+    });
+    _focusNode.requestFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Section Header
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.teal.shade50.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text(
-                'اعمال روزانه برای رضایت امام زمان',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Vazir',
-                  color: Colors.black87,
-                ),
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+          decoration: BoxDecoration(
+            color: Color.fromARGB(146, 255, 255, 255),
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                width: 1,
+              ),
+              bottom: BorderSide(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                width: 1,
               ),
             ),
           ),
-          const SizedBox(height: 12),
-
-          // Grid of Buttons
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.6,
-            children: [
-              _gridButton(context, 'نذر صلوات'),
-              _gridButton(context, 'تلاوت قرآن'),
-              _gridButton(context, 'طعام،نذر'),
-              _gridButton(context, '...قدمی دیگر'),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Divider
-          Container(
-            height: 2,
-            margin: const EdgeInsets.symmetric(horizontal: 40),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.teal.shade200, Colors.teal.shade700],
-              ),
-              borderRadius: BorderRadius.circular(2),
+          child: Text(
+            'اعمال روزانه برای رضایت امام زمان',
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Vazir',
+              color: Theme.of(context).colorScheme.primary,
             ),
-          ),
-
-          const SizedBox(height: 24),
-          // Animated Calendar Button
-          const AnimatedCalendarButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _gridButton(BuildContext context, String label) {
-    return GestureDetector(
-      onTap: () => _showInfoPopup(context, label),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: const LinearGradient(
-            colors: [Color(0xFF007B83), Color(0xFF00C2BA)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.teal.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            children: [
-              // Glass overlay
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  color: Colors.white.withOpacity(0.05),
-                ),
-              ),
-              // Border gradient overlay
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    width: 1.5,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
-                ),
-              ),
-              // Label
-              Center(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: 'Vazir',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFFFAF9F6),
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                        color: Colors.black26,
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showInfoPopup(BuildContext context, String title) {
-    final textController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'اطلاعات تکمیلی برای $title',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Vazir',
-                ),
-                textAlign: TextAlign.center,
+        // Text input field with submit button or saved text with edit button
+        Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(146, 255, 255, 255),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                width: 1,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: textController,
-                decoration: const InputDecoration(
-                  hintTextDirection: TextDirection.rtl,
-                  hintText: 'اینجا بنویسید...',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                textAlign: TextAlign.right,
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF007B83),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  final store = Provider.of<NotesStore>(context, listen: false);
-                  store.add(
-                    NoteEntry(
-                      date: DateTime.now(),
-                      text: textController.text.trim(),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Stack(
+              children: [
+                if (_isEditMode) ...[
+                  // Edit mode: Show text input with submit button
+                  TextField(
+                    controller: _textController,
+                    focusNode: _focusNode,
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontFamily: 'Vazir',
+                      fontSize: 14,
                     ),
-                  );
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => Maindatewindow()),
-                  );
-                },
-                child: const Text('ثبت'),
-              ),
-            ],
+                    decoration: InputDecoration(
+                      hintText: 'عمل روزانه خود را وارد کنید...',
+                      hintTextDirection: TextDirection.rtl,
+                      hintStyle: TextStyle(
+                        fontFamily: 'Vazir',
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.fromLTRB(80, 16, 16, 16), // Extra padding on left for button
+                    ),
+                    maxLines: 1,
+                    onSubmitted: (_) => _saveTask(),
+                  ),
+                  // Submit button positioned at bottom-right
+                  Positioned(
+                    left: 8,
+                    top: 8,
+                    bottom: 8,
+                    child: ElevatedButton(
+                      onPressed: _saveTask,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        minimumSize: const Size(60, 32),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'ثبت',
+                        style: TextStyle(
+                          fontFamily: 'Vazir',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // Display mode: Show saved text with edit button
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(80, 16, 16, 16),
+                    child: Text(
+                      _savedText,
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontFamily: 'Vazir',
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  // Edit button positioned at bottom-right
+                  Positioned(
+                    left: 8,
+                    top: 8,
+                    bottom: 8,
+                    child: ElevatedButton(
+                      onPressed: _enterEditMode,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        minimumSize: const Size(60, 32),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'ویرایش',
+                        style: TextStyle(
+                          fontFamily: 'Vazir',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }

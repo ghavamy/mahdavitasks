@@ -37,27 +37,17 @@ class MahdiCalculator extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.light(),
-      home: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/BackGround.jpeg'),
-                fit: BoxFit.cover,
-                // Optional: add a soft dim for readability
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.2),
-                  BlendMode.darken,
-                ),
-              ),
-            ),
+      home: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/BackGround.jpeg'),
+            fit: BoxFit.cover,
           ),
-          Scaffold(
-            backgroundColor: Colors.transparent, // <-- Crucial
-            body:MahdiTimer(),
-          ),
-        ],
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: const MahdiTimer(),
+        ),
       ),
     );
   }

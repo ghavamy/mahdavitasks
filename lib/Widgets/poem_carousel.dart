@@ -50,16 +50,16 @@ class _PoemCarouselState extends State<PoemCarousel> {
         child: Text(
           poems[currentPoemIndex],
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 40,
             fontFamily: 'IranNastaliq',
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onPrimary,
             height: 1.6,
             shadows: [
               Shadow(
-                offset: Offset(0, 1),
+                offset: const Offset(0, 1),
                 blurRadius: 3,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.shadow.withOpacity(0.8),
               ),
             ],
           ),

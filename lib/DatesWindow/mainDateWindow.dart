@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shamsi_date/shamsi_date.dart';
 import 'package:mahdavitasks/BasicFiles/PersianFormats.dart';
+import 'package:mahdavitasks/Widgets/month_calendar_widget.dart';
 import 'note_store.dart';
-import 'days_page.dart';
 
 class Maindatewindow extends StatefulWidget {
   const Maindatewindow({super.key});
@@ -12,156 +13,254 @@ class Maindatewindow extends StatefulWidget {
 }
 
 class _MaindatewindowState extends State<Maindatewindow> {
+  late int selectedYear;
+  late int selectedMonth;
+  int? selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current Jalali date using shamsi_date package
+    final now = DateTime.now();
+    final jalaliNow = Jalali.fromDateTime(now);
+    selectedYear = jalaliNow.year;
+    selectedMonth = jalaliNow.month;
+  }
+
   // Decide the top bar color based on Jalali month number (1–12)
-  Color _seasonColor(int month) {
+  Color _seasonColor(BuildContext context, int month) {
     if (month >= 1 && month <= 3) {
-      return Colors.green.shade400; // Spring
+      return Theme.of(context).colorScheme.tertiary; // Spring
     } else if (month >= 4 && month <= 6) {
-      return Colors.brown.shade400; // Summer
+      return Theme.of(context).colorScheme.secondary; // Summer
     } else if (month >= 7 && month <= 9) {
-      return Colors.orange.shade400; // Autumn
+      return Theme.of(context).colorScheme.primary; // Autumn
     } else {
-      return Colors.blue.shade400; // Winter
+      return Theme.of(context).colorScheme.primaryContainer; // Winter
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final store = context.watch<NotesStore>();
-    final years = store.years;
+    
+    // Always show calendar view with month/year selectors at top
+    return _buildCalendarView(store);
+  }
 
+
+
+  Widget _buildCalendarView(NotesStore store) {
+    final years = store.years;
+    final months = List<int>.generate(12, (i) => i + 1);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('سال‌ها و ماه‌ها'),
+        title: const Text('تقویم اعمال'),
         centerTitle: true,
-        flexibleSpace: const Image(
-          image: AssetImage('assets/images/smooth_green_gradient.png'),
-          fit: BoxFit.cover,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                _seasonColor(context, selectedMonth),
+                _seasonColor(context, selectedMonth).withOpacity(0.7),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: years.length,
-        itemBuilder: (context, yearIndex) {
-          final year = years[yearIndex];
-          final months = store.monthsIn(year);
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Year title
-                Text(
-                  PersianUtils.toPersianDigits(year.toString()),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+      body: Column(
+        children: [
+          // Month and Year selectors at the top
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
                 ),
-
-                const SizedBox(height: 12),
-
-                //months grid
-                Directionality(
-                  textDirection: TextDirection.rtl, 
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: months.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Year selector
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    itemBuilder: (context, monthIndex) {
-                      final m = months[monthIndex];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DaysPage(year: year, month: m),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: selectedYear,
+                        isExpanded: true,
+                        items: years.map((year) {
+                          return DropdownMenuItem<int>(
+                            value: year,
+                            child: Text(
+                              PersianUtils.toPersianDigits(year.toString()),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontFamily: 'Vazir'),
                             ),
                           );
+                        }).toList(),
+                        onChanged: (newYear) {
+                          if (newYear != null) {
+                            setState(() {
+                              selectedYear = newYear;
+                              // Reset month if it doesn't exist in new year
+                              final newMonths = store.monthsIn(newYear);
+                              if (!newMonths.contains(selectedMonth)) {
+                                selectedMonth = newMonths.first;
+                              }
+                              selectedDay = null;
+                            });
+                          }
                         },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: Colors.grey.shade400,
-                              width: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Month selector
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: selectedMonth,
+                        isExpanded: true,
+                        items: months.map((month) {
+                          return DropdownMenuItem<int>(
+                            value: month,
+                            child: Text(
+                              PersianUtils.monthName(month),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontFamily: 'Vazir'),
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              )
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              // Seasonal colored "binding"
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                child: Container(
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: _seasonColor(m),
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(8),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: List.generate(
-                                      5,
-                                      (i) => Container(
-                                        width: 6,
-                                        height: 6,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // Month name
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 14),
-                                  child: Text(
-                                    PersianUtils.monthName(m),
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                          );
+                        }).toList(),
+                        onChanged: (newMonth) {
+                          if (newMonth != null) {
+                            setState(() {
+                              selectedMonth = newMonth;
+                              selectedDay = null;
+                            });
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-          );
-        },
+          ),
+          
+          // Calendar widget
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: MonthCalendarWidget(
+              year: selectedYear,
+              month: selectedMonth,
+              selectedDay: selectedDay,
+              onDateSelected: (day) {
+                setState(() {
+                  selectedDay = day;
+                });
+              },
+            ),
+          ),
+          
+          // Tasks for selected date
+          Expanded(
+            child: selectedDay != null
+                ? _buildTasksForSelectedDate(store, selectedDay!)
+                : const Center(
+                    child: Text(
+                      'روزی را از تقویم انتخاب کنید',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontFamily: 'Vazir',
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildTasksForSelectedDate(NotesStore store, int day) {
+    final notes = store.entriesOn(selectedYear, selectedMonth, day);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Selected date header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              ),
+            ),
+          ),
+          child: Text(
+            'اعمال روز ${PersianUtils.dayOrdinal(day)}',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+        
+        // Tasks list
+        Expanded(
+          child: notes.isEmpty
+              ? const Center(
+                  child: Text(
+                    'هیچ عملی برای این روز ثبت نشده است',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: notes.length,
+                  itemBuilder: (context, index) {
+                    final note = notes[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          note.text,
+                          textAlign: TextAlign.right,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

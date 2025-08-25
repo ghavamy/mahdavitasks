@@ -1,13 +1,37 @@
 // note_store.dart
 import 'package:flutter/foundation.dart';
 import 'package:shamsi_date/shamsi_date.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class NoteEntry {
   final DateTime date; // use only Y/M/D for grouping
   final String text;
+  final String id;
+  final DateTime createdAt;
 
-  NoteEntry({required DateTime date, required this.text})
-      : date = DateTime(date.year, date.month, date.day);
+  NoteEntry({
+    required DateTime date, 
+    required this.text,
+    String? id,
+    DateTime? createdAt,
+  }) : date = DateTime(date.year, date.month, date.day),
+       id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+       createdAt = createdAt ?? DateTime.now();
+
+  Map<String, dynamic> toJson() => {
+    'date': date.toIso8601String(),
+    'text': text,
+    'id': id,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory NoteEntry.fromJson(Map<String, dynamic> json) => NoteEntry(
+    date: DateTime.parse(json['date']),
+    text: json['text'],
+    id: json['id'],
+    createdAt: DateTime.parse(json['createdAt']),
+  );
 }
 
 class YearMonth {
@@ -26,16 +50,73 @@ class YearMonth {
 class NotesStore extends ChangeNotifier {
   // data[year][month][day] -> List<NoteEntry>
   final Map<int, Map<int, Map<int, List<NoteEntry>>>> _data = {};
+  bool _isLoaded = false;
 
-  void add(NoteEntry e) {
+  Future<void> loadData() async {
+    if (_isLoaded) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('notes_data');
+    
+    if (jsonString != null) {
+      try {
+        final List<dynamic> jsonList = json.decode(jsonString);
+        for (final item in jsonList) {
+          final entry = NoteEntry.fromJson(item);
+          _addToMemory(entry);
+        }
+      } catch (e) {
+        debugPrint('Error loading notes: $e');
+      }
+    }
+    _isLoaded = true;
+    notifyListeners();
+  }
 
+  void _addToMemory(NoteEntry e) {
     final shamsiDate = Jalali.fromDateTime(e.date);
     final y = shamsiDate.year, m = shamsiDate.month, d = shamsiDate.day;
     _data.putIfAbsent(y, () => {});
     _data[y]!.putIfAbsent(m, () => {});
     _data[y]![m]!.putIfAbsent(d, () => []);
     _data[y]![m]![d]!.add(e);
+  }
+
+  Future<void> add(NoteEntry e) async {
+    _addToMemory(e);
+    await _saveData();
     notifyListeners();
+  }
+
+  Future<void> update(NoteEntry updatedEntry) async {
+    final shamsiDate = Jalali.fromDateTime(updatedEntry.date);
+    final y = shamsiDate.year, m = shamsiDate.month, d = shamsiDate.day;
+
+    final dayList = _data[y]?[m]?[d];
+    if (dayList == null) return;
+
+    final index = dayList.indexWhere((e) => e.id == updatedEntry.id);
+    if (index == -1) return;
+
+    dayList[index] = updatedEntry;
+    await _saveData();
+    notifyListeners();
+  }
+
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final allEntries = <NoteEntry>[];
+    
+    for (final yearMap in _data.values) {
+      for (final monthMap in yearMap.values) {
+        for (final dayList in monthMap.values) {
+          allEntries.addAll(dayList);
+        }
+      }
+    }
+    
+    final jsonString = json.encode(allEntries.map((e) => e.toJson()).toList());
+    await prefs.setString('notes_data', jsonString);
   }
 
   List<YearMonth> get allYearMonths {
