@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:mahdavitasks/Widgets/animated_button.dart';
 import 'package:mahdavitasks/Widgets/poem_carousel.dart';
-import 'package:mahdavitasks/Widgets/statistics_widget.dart';
+import 'package:mahdavitasks/DatesWindow/statistics_widget.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
 import 'package:flutter/material.dart';
@@ -97,33 +97,40 @@ class _MahdiTimerState extends State<MahdiTimer> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Timer display at the top with proper spacing
-              buildTimeDisplay(),
-              const SizedBox(height: 24), // Optimized spacing for visual hierarchy
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              // Allows the whole page to scroll only if content exceeds height
+              physics: const ClampingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      buildTimeDisplay(),
 
-              const PoemCarousel(),
-              const SizedBox(height: 24),
+                      const PoemCarousel(),
+                      const SizedBox(height: 12),
 
-              // Daily tasks section - now the main focus after timer
-              const Buttons(),
-              const SizedBox(height: 24),
+                      // IMPORTANT: use Buttons() directly (it already has a fixed-height window inside)
+                      const Buttons(),
+                      const SizedBox(height: 12),
 
-              // Statistics section - آمار اعمال
-              const StatisticsWidget(),
-                const SizedBox(height: 24), 
+                      const StatisticsWidget(),
+                      const SizedBox(height: 12),
 
-                Align(
-                alignment: Alignment.centerLeft,
-                child: AnimatedCalendarButton(),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: AnimatedCalendarButton(),
+                      ),
+                    ],
+                  ),
                 ),
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

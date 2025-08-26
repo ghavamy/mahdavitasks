@@ -1,7 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'MahdiTimer.dart';
 
-class MahdiCalculator extends StatelessWidget{
+class MahdiCalculator extends StatelessWidget {
   static DateTime targetDate = DateTime(874, 1, 5, 5, 0, 0);
 
   const MahdiCalculator({super.key});
@@ -46,7 +48,17 @@ class MahdiCalculator extends StatelessWidget{
         ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: const MahdiTimer(),
+          body: Stack(
+            children: [
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8 , sigmaY: 8),
+                child: Container(
+                  color: Colors.black.withOpacity(0),
+                ),
+              ),
+              const MahdiTimer(),
+            ],
+          ),
         ),
       ),
     );

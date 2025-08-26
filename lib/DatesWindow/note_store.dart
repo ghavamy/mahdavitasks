@@ -161,4 +161,31 @@ class NotesStore extends ChangeNotifier {
     months.sort();
     return months;
   }
+
+  Future<void> remove(String id) async {
+    final today = DateTime.now();
+    final shamsiDate = Jalali.fromDateTime(today);
+    final y = shamsiDate.year;
+    final m = shamsiDate.month;
+    final d = shamsiDate.day;
+
+    final dayList = _data[y]?[m]?[d];
+    if (dayList == null) return;
+
+    dayList.removeWhere((entry) => entry.id == id);
+
+    // Clean up empty day list
+    if (dayList.isEmpty) {
+      _data[y]?[m]?.remove(d);
+      if (_data[y]?[m]?.isEmpty ?? false) {
+        _data[y]?.remove(m);
+        if (_data[y]?.isEmpty ?? false) {
+          _data.remove(y);
+        }
+      }
+    }
+
+    await _saveData();
+    notifyListeners();
+  }
 }

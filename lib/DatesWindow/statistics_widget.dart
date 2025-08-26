@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../DatesWindow/note_store.dart';
+import 'package:shamsi_date/shamsi_date.dart';
+import 'note_store.dart';
 import '../BasicFiles/PersianFormats.dart';
 
 class StatisticsWidget extends StatelessWidget {
@@ -9,7 +10,7 @@ class StatisticsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<NotesStore>();
-    final today = DateTime.now();
+    final today = Jalali.now();
     final todayEntries = store.entriesOn(
       today.year,
       today.month,
@@ -17,10 +18,10 @@ class StatisticsWidget extends StatelessWidget {
     );
 
     // Calculate weekly stats
-    final weekStart = today.subtract(Duration(days: today.weekday - 1));
+    final weekStart = today.addDays(-(today.weekDay - 1));
     int weeklyCount = 0;
     for (int i = 0; i < 7; i++) {
-      final day = weekStart.add(Duration(days: i));
+      final day = weekStart.addDays(i);
       weeklyCount += store.entriesOn(day.year, day.month, day.day).length;
     }
 

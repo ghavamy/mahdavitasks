@@ -1,4 +1,6 @@
 // persian_utils.dart
+import 'package:shamsi_date/shamsi_date.dart';
+
 class PersianUtils {
   // Persian month names (Jalali order)
   static const List<String> monthsFa = [
@@ -38,4 +40,36 @@ class PersianUtils {
     return ordinals[day];
   }
 
+
+  /// Get Persian weekday name for given [weekDay] (1–7)
+  static String weekdayName(int weekDay) {
+    const weekdaysFa = [
+      'شنبه',     // 1
+      'یک‌شنبه',  // 2
+      'دو‌شنبه',  // 3
+      'سه‌شنبه',  // 4
+      'چهار‌شنبه',// 5
+      'پنج‌شنبه', // 6
+      'جمعه',     // 7
+    ];
+    if (weekDay < 1 || weekDay > 7) return '';
+    return weekdaysFa[weekDay - 1];
+  }
+
+  static String formatJalaliDate(Jalali date) {
+    final weekday = weekdayName(date.weekDay);
+    final day = toPersianDigits(date.day.toString());
+    final month = monthName(date.month);
+    return '$weekday، $day $month';
+  }
+
+  static String hijriMonthNameArabic(int month) {
+    const arabicMonths = [
+      'محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر',
+      'جمادى الأولى', 'جمادى الآخرة', 'رجب',
+      'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
+    ];
+    if (month < 1 || month > 12) return '';
+    return arabicMonths[month - 1];
+  }
 }

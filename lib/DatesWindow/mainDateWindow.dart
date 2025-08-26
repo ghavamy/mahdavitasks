@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:mahdavitasks/BasicFiles/PersianFormats.dart';
-import 'package:mahdavitasks/Widgets/month_calendar_widget.dart';
+import 'package:mahdavitasks/DatesWindow/month_calendar_widget.dart';
 import 'note_store.dart';
 
 class Maindatewindow extends StatefulWidget {
@@ -25,6 +25,7 @@ class _MaindatewindowState extends State<Maindatewindow> {
     final jalaliNow = Jalali.fromDateTime(now);
     selectedYear = jalaliNow.year;
     selectedMonth = jalaliNow.month;
+    selectedDay = jalaliNow.day; // Optional: start with today selected
   }
 
   // Decide the top bar color based on Jalali month number (1–12)
@@ -51,8 +52,6 @@ class _MaindatewindowState extends State<Maindatewindow> {
 
 
   Widget _buildCalendarView(NotesStore store) {
-    final years = store.years;
-    final months = List<int>.generate(12, (i) => i + 1);
     
     return Scaffold(
       appBar: AppBar(
@@ -73,108 +72,15 @@ class _MaindatewindowState extends State<Maindatewindow> {
       ),
       body: Column(
         children: [
-          // Month and Year selectors at the top
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Year selector
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.outline),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: selectedYear,
-                        isExpanded: true,
-                        items: years.map((year) {
-                          return DropdownMenuItem<int>(
-                            value: year,
-                            child: Text(
-                              PersianUtils.toPersianDigits(year.toString()),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontFamily: 'Vazir'),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (newYear) {
-                          if (newYear != null) {
-                            setState(() {
-                              selectedYear = newYear;
-                              // Reset month if it doesn't exist in new year
-                              final newMonths = store.monthsIn(newYear);
-                              if (!newMonths.contains(selectedMonth)) {
-                                selectedMonth = newMonths.first;
-                              }
-                              selectedDay = null;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // Month selector
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.outline),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: selectedMonth,
-                        isExpanded: true,
-                        items: months.map((month) {
-                          return DropdownMenuItem<int>(
-                            value: month,
-                            child: Text(
-                              PersianUtils.monthName(month),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontFamily: 'Vazir'),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (newMonth) {
-                          if (newMonth != null) {
-                            setState(() {
-                              selectedMonth = newMonth;
-                              selectedDay = null;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
           // Calendar widget
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: MonthCalendarWidget(
-              year: selectedYear,
-              month: selectedMonth,
-              selectedDay: selectedDay,
-              onDateSelected: (day) {
+              onDateSelected: (day, month, year) {
                 setState(() {
                   selectedDay = day;
+                  selectedMonth = month;
+                  selectedYear = year;
                 });
               },
             ),
