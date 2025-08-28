@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:mahdavitasks/Widgets/animated_button.dart';
+import 'package:mahdavitasks/DatesWindow/mainDateWindow.dart';
 import 'package:mahdavitasks/Widgets/poem_carousel.dart';
-import 'package:mahdavitasks/DatesWindow/statistics_widget.dart';
+import 'package:mahdavitasks/Widgets/statistics_widget.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
 import 'package:flutter/material.dart';
@@ -96,41 +96,58 @@ class _MahdiTimerState extends State<MahdiTimer> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Maindatewindow()),
+            );
+          },
+          tooltip: 'کارنامه اعمال',
+          icon: const Icon(Icons.calendar_month),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'راهنما',
+          ),
+        ],
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+
+      // 🔹 This stays pinned at the very bottom of the screen
+      bottomNavigationBar: const StatisticsWidget(),
+
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              // Allows the whole page to scroll only if content exceeds height
-              physics: const ClampingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        // This Column fills the whole remaining height by default
+        child: Column(
+          children: [
+            // The Expanded forces this area to take up all space above the footer
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       buildTimeDisplay(),
-
+                      const SizedBox(height: 12),
                       const PoemCarousel(),
                       const SizedBox(height: 12),
-
-                      // IMPORTANT: use Buttons() directly (it already has a fixed-height window inside)
-                      const Buttons(),
+                      const Buttons(), // fixed-height "window" scrolls inside itself
                       const SizedBox(height: 12),
-
-                      const StatisticsWidget(),
-                      const SizedBox(height: 12),
-
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: AnimatedCalendarButton(),
-                      ),
                     ],
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );
@@ -141,7 +158,7 @@ class _MahdiTimerState extends State<MahdiTimer> {
     return Container(
       alignment: Alignment.center,
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
       child: Column(
         children: [
           // Single row layout for all screen sizes as requested
