@@ -44,9 +44,12 @@ class _MaindatewindowState extends State<Maindatewindow> {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<NotesStore>();
-    
-    // Always show calendar view with month/year selectors at top
-    return _buildCalendarView(store);
+
+    return Scaffold(
+      body: SafeArea(
+        child: _buildCalendarView(store),
+      ),
+    );
   }
 
 

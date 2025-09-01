@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:mahdavitasks/DatesWindow/mainDateWindow.dart';
 import 'package:mahdavitasks/Widgets/poem_carousel.dart';
-import 'package:mahdavitasks/Widgets/statistics_widget.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +34,8 @@ class _MahdiTimerState extends State<MahdiTimer> {
   @override
   void initState() {
     super.initState();
+
+
 
     _daysController = StreamController<String>.broadcast();
     _monthsController = StreamController<String>.broadcast();
@@ -94,63 +95,47 @@ class _MahdiTimerState extends State<MahdiTimer> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Maindatewindow()),
-            );
-          },
-          tooltip: 'کارنامه اعمال',
-          icon: const Icon(Icons.calendar_month),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.help_outline),
-            tooltip: 'راهنما',
+    return
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            leading: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Maindatewindow()),
+                );
+              },
+              tooltip: 'کارنامه اعمال',
+              icon: const Icon(Icons.calendar_month),
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.help_outline),
+                tooltip: 'راهنما',
+              ),
+            ],
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           ),
-        ],
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-
-      // 🔹 This stays pinned at the very bottom of the screen
-      bottomNavigationBar: const StatisticsWidget(),
-
-      body: SafeArea(
-        // This Column fills the whole remaining height by default
-        child: Column(
-          children: [
-            // The Expanded forces this area to take up all space above the footer
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      buildTimeDisplay(),
-                      const SizedBox(height: 12),
-                      const PoemCarousel(),
-                      const SizedBox(height: 12),
-                      const Buttons(), // fixed-height "window" scrolls inside itself
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 90),
+              child: Column(
+                children: [
+                  buildTimeDisplay(),
+                  const PoemCarousel(),
+                  const SizedBox(height: 12),
+                  const Buttons(),
+                  const SizedBox(height: 12),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
   }
 
   // Build the main display for the timer - always in one row

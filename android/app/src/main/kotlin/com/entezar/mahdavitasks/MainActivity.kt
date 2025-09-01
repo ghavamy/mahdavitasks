@@ -1,4 +1,4 @@
-package com.example.mahdavitasks
+package com.entezar.mahdavitasks
 
 import io.flutter.embedding.android.FlutterActivity
 

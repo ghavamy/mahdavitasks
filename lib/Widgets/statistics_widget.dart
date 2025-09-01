@@ -59,6 +59,7 @@ class StatisticsWidget extends StatelessWidget {
               child: Text(
                 'اعمال',
                 style: TextStyle(
+                  decoration: TextDecoration.none,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Vazir',
@@ -105,6 +106,7 @@ class StatisticsWidget extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: const TextStyle(
+                decoration: TextDecoration.none,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Vazir',
@@ -125,6 +127,7 @@ class StatisticsWidget extends StatelessWidget {
               child: Text(
                 value,
                 style: const TextStyle(
+                  decoration: TextDecoration.none,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Vazir',
