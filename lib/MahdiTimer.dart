@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:mahdavitasks/DatesWindow/mainDateWindow.dart';
 import 'package:mahdavitasks/Widgets/poem_carousel.dart';
+import 'package:mahdavitasks/update_checker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Widgets/buttons.dart';
 import 'MahdiCalculator.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +15,7 @@ class MahdiTimer extends StatefulWidget {
   _MahdiTimerState createState() => _MahdiTimerState();
 }
 
-class _MahdiTimerState extends State<MahdiTimer> {
+class _MahdiTimerState extends State<MahdiTimer>  with SingleTickerProviderStateMixin{
   late final StreamController<String> _daysController;
   late final StreamController<String> _monthsController;
   late final StreamController<String> _yearsController;
@@ -28,6 +30,10 @@ class _MahdiTimerState extends State<MahdiTimer> {
   late final Stream<String> minutesStream;
   late final Stream<String> secondsStream;
 
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  bool _shouldAnimate = false;
   Map<String, int> timeBreakdown = {};
 
 
@@ -35,6 +41,10 @@ class _MahdiTimerState extends State<MahdiTimer> {
   void initState() {
     super.initState();
 
+    //for checking the update version
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        checkForForceUpdate(context);
+      });
 
 
     _daysController = StreamController<String>.broadcast();
@@ -53,6 +63,26 @@ class _MahdiTimerState extends State<MahdiTimer> {
 
     _updateTime();
     Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
+
+    //this part is for the calendar icon puls
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.3)
+        .chain(CurveTween(curve: Curves.easeInOut))
+        .animate(_controller);
+        
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      final hasShownHint = prefs.getBool('calendarHintShown') ?? false;
+      if (!hasShownHint) {
+        setState(() => _shouldAnimate = true);
+        _controller.repeat(reverse: true); // loop forever until stopped
+      }
+    });
+
   }
 
   void _updateTime() {
@@ -70,6 +100,7 @@ class _MahdiTimerState extends State<MahdiTimer> {
 
   @override
   void dispose() {
+    _controller.dispose();
     _daysController.close();
     _monthsController.close();
     _yearsController.close();
@@ -99,28 +130,44 @@ class _MahdiTimerState extends State<MahdiTimer> {
         Scaffold(
           backgroundColor: Colors.transparent,
           resizeToAvoidBottomInset: true,
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Maindatewindow()),
-                );
-              },
-              tooltip: 'کارنامه اعمال',
-              icon: const Icon(Icons.calendar_month),
-            ),
-            actions: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.help_outline),
-                tooltip: 'راهنما',
+              appBar: AppBar(
+                leading: _shouldAnimate
+                    ? AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _scaleAnimation.value,
+                            child: child,
+                          );
+                        },
+                        child: IconButton(
+                          onPressed: _onCalendarPressed,
+                          tooltip: 'کارنامه اعمال',
+                          icon: const Icon(Icons.calendar_month),
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: _onCalendarPressed,
+                        tooltip: 'کارنامه اعمال',
+                        icon: const Icon(Icons.calendar_month),
+                      ),
+                title: Image.asset(
+                  'assets/images/appbar_main_title.png',
+                  height: 60,
+                  fit: BoxFit.contain,
+                ),
+                centerTitle: true,
+                actions: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.help_outline),
+                    tooltip: 'راهنما',
+                  ),
+                ],
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
               ),
-            ],
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-          ),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 90),
@@ -311,4 +358,22 @@ class _MahdiTimerState extends State<MahdiTimer> {
       ),
     );
   }
+
+  //this is for pressing the calendar icon
+    void _onCalendarPressed() async {
+    // Stop animation
+    _controller.stop();
+    setState(() => _shouldAnimate = false);
+
+    // Mark as shown so it won't animate again in future launches
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('calendarHintShown', true);
+
+    // Navigate to your calendar page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Maindatewindow()),
+    );
+  }
+
 }

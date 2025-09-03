@@ -49,10 +49,7 @@ flutter {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0") // or your desired Kotlin version
-    // other dependencies...
-
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2") // <-- Kotlin DSL uses function call syntax
-
-    implementation ("androidx.work:work-runtime:2.7.1")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+    implementation("androidx.work:work-runtime:2.7.1")
 }

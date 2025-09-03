@@ -1,7 +1,7 @@
 name: mahdavitasks
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0
 
 environment:
   sdk: ^3.8.1
@@ -12,6 +12,9 @@ dependencies:
 
   flutter_local_notifications: ^17.1.4
   workmanager: ^0.7.0
+  http: ^1.5.0
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.0
 
   hijri: ^3.0.0
   shamsi_date: ^1.0.0
@@ -38,7 +41,10 @@ flutter:
     - family: IranNastaliq
       fonts:
         - asset: assets/fonts/IranNastaliq.ttf
-        
+    - family: Kufi
+      fonts:
+        - asset: assets/fonts/ReemKufi-Bold.ttf
+
   assets:
     - assets/images/mahdi.jpg
     - assets/images/BackGround.jpeg
@@ -46,6 +52,10 @@ flutter:
     - assets/images/IslamicButton.png
     - assets/icons/arrow_left.svg
     - assets/images/Splash.png
+    - assets/images/tile_bg.png
+    - assets/images/islamic_pattern.png
+    - assets/images/hadith_bg.png
+    - assets/images/appbar_main_title.png
 
 flutter_native_splash:
   color: "#ffffff" # background color

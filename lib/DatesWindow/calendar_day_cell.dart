@@ -7,6 +7,7 @@ class CalendarDayCell extends StatelessWidget {
   final int lunarDay;
   final bool isSelected;
   final bool hasTasks;
+  final bool? allDone; // ✅ null if no tasks, true if all done, false if not all done
   final VoidCallback onTap;
 
   const CalendarDayCell({
@@ -17,18 +18,24 @@ class CalendarDayCell extends StatelessWidget {
     required this.isSelected,
     required this.hasTasks,
     required this.onTap,
+    this.allDone,
   });
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final surfaceColor = Theme.of(context).colorScheme.surface;
     final outlineColor = Theme.of(context).colorScheme.outline;
+
+    // Decide dot color
+    Color? dotColor;
+    if (hasTasks) {
+      dotColor = (allDone ?? false) ? Colors.green : Colors.red;
+    }
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 60,
+        height: 50,
         margin: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: isSelected ? primaryColor : Colors.transparent,
@@ -54,13 +61,13 @@ class CalendarDayCell extends StatelessWidget {
                           : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  if (hasTasks)
+                  if (dotColor != null)
                     Container(
                       margin: const EdgeInsets.only(top: 2),
                       width: 6,
                       height: 6,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      decoration: BoxDecoration(
+                        color: dotColor,
                         shape: BoxShape.circle,
                       ),
                     ),

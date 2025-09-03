@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:mahdavitasks/Widgets/hadith_carousel.dart';
 import 'package:mahdavitasks/Widgets/statistics_widget.dart';
 import 'package:workmanager/workmanager.dart';
 import 'MahdiTimer.dart';
@@ -47,46 +48,26 @@ class MahdiCalculator extends StatelessWidget {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/BackGround.jpeg'),
-                fit: BoxFit.cover,
+          image: AssetImage('assets/images/BackGround.jpeg'),
+          fit: BoxFit.cover,
               ),
             ),
             child: Scaffold(
               backgroundColor: Colors.transparent,
               body: Stack(
-                children: [
-                  BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                    child: Container(
-                      color: Colors.black.withOpacity(0),
-                    ),
-                  ),
-                  const MahdiTimer(),
-                ],
+          children: [
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+              child: Container(
+                color: Colors.black.withOpacity(0),
+              ),
+            ),
+            const MahdiTimer(),
+          ],
               ),
             ),
           ),
-
-        ElevatedButton.icon(
-        icon: const Icon(Icons.notifications_active),
-        label: const Text("Trigger One‑Off Notification"),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          textStyle: const TextStyle(fontSize: 16),
-        ),
-        onPressed: () {
-          Workmanager().cancelAll();
-          // Register the one‑off task
-          Workmanager().registerOneOffTask(
-            DateTime.now().millisecondsSinceEpoch.toString(),
-            "checkTasks",
-            initialDelay: Duration(seconds: 30),
-          );
-        },
-      ),
-
-
-          // Footer completely outside the Scaffold
+          // Combine HadithCarousel and StatisticsWidget in a Column
           Positioned(
             left: 0,
             right: 0,
@@ -95,8 +76,14 @@ class MahdiCalculator extends StatelessWidget {
               removeBottom: true, // ignore keyboard pushing
               context: context,
               child: SafeArea(
-                top: false,
-                child: const StatisticsWidget(),
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const HadithCarousel(),
+              const StatisticsWidget(),
+            ],
+          ),
               ),
             ),
           ),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "657900319979",
+    "project_id": "entezar-8a74d",
+    "storage_bucket": "entezar-8a74d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657900319979:android:22258de027bdf7e1d03aae",
+        "android_client_info": {
+          "package_name": "com.entezar.mahdavitasks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS8S_HprLvh8SjeOLZwXZDRA1V8ynrZzA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

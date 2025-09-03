@@ -53,7 +53,7 @@ class _MonthCalendarWidgetState extends State<MonthCalendarWidget> {
     return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
@@ -225,6 +225,11 @@ class _MonthCalendarWidgetState extends State<MonthCalendarWidget> {
       final hasTasks =
           store.entriesOn(currentYear, currentMonth, day).isNotEmpty;
 
+      // Whether all tasks are done
+      final allDone = hasTasks
+          ? store.allTasksDone(currentYear, currentMonth, day)
+          : null;
+
       currentWeek.add(
         CalendarDayCell(
           jalaliDay: day,
@@ -232,6 +237,7 @@ class _MonthCalendarWidgetState extends State<MonthCalendarWidget> {
           lunarDay: hijri.hDay,
           isSelected: isSelected,
           hasTasks: hasTasks,
+          allDone: allDone, // ✅ pass to cell for dot color logic
           onTap: () {
             setState(() {
               selectedDay = day;
