@@ -25,14 +25,6 @@ class _MonthCalendarWidgetState extends State<MonthCalendarWidget> {
   late int currentMonth;
   int? selectedDay;
 
-  String _formattedSelectedDate() {
-  final date = Jalali(currentYear, currentMonth, selectedDay!);
-  final weekday = PersianUtils.weekdayName(date.weekDay); // e.g. "سه‌شنبه"
-  final day = PersianUtils.toPersianDigits(date.day.toString());
-  final month = PersianUtils.monthName(date.month);
-  return '$weekday، $day $month';
-}
-
   @override
   void initState() {
     super.initState();
@@ -110,7 +102,7 @@ class _MonthCalendarWidgetState extends State<MonthCalendarWidget> {
                               if (y != null && y != currentYear) {
                                 setState(() {
                                   currentYear = y;
-                                  selectedDay = null;
+                                  selectedDay = 1;
                                 });
                               }
                             },
@@ -129,7 +121,7 @@ class _MonthCalendarWidgetState extends State<MonthCalendarWidget> {
                               if (m != null && m != currentMonth) {
                                 setState(() {
                                   currentMonth = m;
-                                  selectedDay = null;
+                                  selectedDay = 1;
                                 });
                               }
                             },
